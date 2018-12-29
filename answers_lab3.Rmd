@@ -1,7 +1,7 @@
 ---
 title: "Answers Lab3"
-author: "You Name"
-date: "12/6/2018"
+author: "Marta Pérez Martínez"
+date: "29/12/2018"
 output: html_document
 ---
 
@@ -17,43 +17,116 @@ This is an R Markdown document including the solutions to the laboratory 3 for t
 
 Using the functions implemented in the file `code.R`.
 
-```{r file_load, error=FALSE}
-# source("./code.R")
+```{r file_load, error=FALSE, message=FALSE,warning=FALSE}
+source("./code.R")
 ```
 
 
 ### 1.1 Obtención de la página web
 
-```{r get_title, include=FALSE}
+Obtenemos la página web https://www.mediawiki.org/wiki/MediaWiki
+
+```{r get_title}
+pagina_web<-Obtener_pagina_web()
 
 ```
 
 
 ### 1.2 Analisis de el contenido de la web
 
-```{r web_content, include=FALSE}
+Obtenemos información de la página web, tal como el título o el dominio.
+
+```{r web_content}
+titulo<-Obtener_titulo(pagina_web)
+dominio<-Obtener_dominio()
 
 ```
+El título de la página web es **
+`r 
+titulo
+`**. El dominio es **
+`r 
+dominio
+`**. 
+
+Estudiamos la estructura y el contenido de los datos para su posterior análisis.
+
 
 
 ### 1.3.	Extracción de enlaces 
 
+Obtenemos los links de la página web y construimos un data frame con las URL y los textos de los enlaces.
+Se han eliminado aquellas observaciones que tenían cualquiera de las dos variables como NA.
+No se han eliminado aquellas observaciones que no tenían texto de enlace.
 
-```{r get_links, include=FALSE}
+
+```{r get_links}
+data_frame_enlaces <- Obtener_links(pagina_web)
+summary(data_frame_enlaces)
 
 ```
 
 
 ### 1.4 Exploración de enlaces
 
-```{r expl_links, include=FALSE}
+Utilizamos la función HEAD de la librería httr y consultamos el código de retorno para cada petición hecha a cada uno de los links del data frame anterior.
+Antes de esto, y como tenemos URL relativas, es necesario completarlas añadiendo el dominio como prefijo, de tal manera que una dirección del tipo:
+
+```{r expl_links1, cache=TRUE}
+v_URL_completa <- Obtener_URL_completas(data_frame_enlaces)
+df_expl_enlaces <- Explorar_enlaces(v_URL_completa)
 
 ```
+
+```{r expl_links2, echo=FALSE}
+print(as.character(data_frame_enlaces[34,1]))
+
+```
+se convierte en:
+```{r expl_links3, echo=FALSE}
+print(as.character(v_URL_completa[34]))
+
+```
+
+
+Obtenemos los siguientes códigos de retorno:
+```{r expl_links4, echo=FALSE}
+as.character(as.data.frame(table(df_expl_enlaces$ESTADO))[,1])
+
+
+```
+
+
+
 
 ### Gráficos en R
 
 ### 2.1	Histograma
 
+En este histograma mostramos el número de repeticiones de cada URL, haciendo una separación entre aquellas que aparecen como URL relativas o URL absolutas en la página web de consulta.
+El histograma se ha hecho interactivo,; al pasar por encima de las barras muestra la URL en concreto, el número de repeticiones y si es abosluta/relativa.
+
+```{r, warning=FALSE}
+Plot_histogram(df_expl_enlaces)
+```
+
+
 ### 2.2	Un gráfico de barras
 
+En este gráfico de barras mostramos las URLs que incluyen "ww.mediawiki.org" en el enlace, teniendo en cuenta que las relativas lo incluyen todas (ya que se completó el enlace).
+
+*Nota:"NO_WIKI" son aquellas que no incluyen "ww.mediawiki.org"*
+
+
+```{r}
+Plot_bar(df_expl_enlaces)
+```
+
 ### 2.3 Pie Chart
+
+En este gráfico se muestra el procentaje de cada uno de los códigos de retorno que nos ha devuelto las diferentes URLs.
+
+```{r, warning=FALSE}
+Plot_pie(df_expl_enlaces)
+```
+
